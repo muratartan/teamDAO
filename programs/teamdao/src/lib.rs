@@ -6,7 +6,11 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 pub mod teamdao {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
+    pub fn initialize(ctx: Context<Initialize>, player_number:u8) -> Result<()> {
+        let team = &mut Account<Team> = &mut ctx.accounts.team;
+        team.captain = ctx.accounts.signer.key();
+        team.players = 0;
+        team.prize_owners = player_number
         Ok(())
     }
 }
