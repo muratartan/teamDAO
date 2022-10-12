@@ -28,14 +28,20 @@ pub mod teamdao {
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
-    #[account(init, payer = signer,space = 8 + 8 + 2 + 32 + 1 + 64 )]
+    #[account(init, payer = signer, space = 8 + 8 + 2 + 32 + 1 + 64 )]
     pub team: Account<'info, Team>,
     #[account(mut)]
     pub signer: Signer<'info>,
     pub system_program: Program<'info, System>
 }
 
-
+pub struct ChangeTeam<'info> {
+    #[account(init, payer = signer, space = space = 8 + 8 + 2 + 32 + 1 + 64)]
+    pub team: Account<'info, Team>,
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    pub system_program: Program<'info, System>
+}
 
 pub struct Team {
     pub players: u8,
