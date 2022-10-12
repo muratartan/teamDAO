@@ -24,4 +24,10 @@ pub struct Initialize<'info> {
     pub system_program: Program<'info, System>
 }
 
-pub struct Team {}
+pub struct Team {
+    pub players: u8,
+    pub captain: Pubkey,
+    pub prize_owners: u8,
+    pub prize_owners_id: Vec<u64>,
+    pub prize_owners_vote: Vec<u64>,
+}
