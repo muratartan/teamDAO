@@ -38,7 +38,7 @@ pub mod teamdao {
 
     fn change_captain(ctx: Context<ChangeCaptain>, team: String, id: u64, new_captain: Pubkey) -> Result<()> {
         let team: &mut Account<Team> = &mut ctx.accounts.team;
-        team.captain == *ctx.accounts.signer.key,
+        team.captain = *ctx.accounts.signer.key;
         if team.members.contains(&new_captain) {
             team.captain = new_captain;
             msg!("player {} is now the captain of the team {}", new_captain , team.name );
@@ -50,6 +50,14 @@ pub mod teamdao {
 
     fn remove_from_team(ctx: Context<RemoveFromTeam>, team: String, id: u64) -> Result<()> {
         let team: &mut Account<Team> = &mut ctx.accounts.team;
+        let signer == *ctx.accounts.signer.key;
+        if team.members.len() == 1 {
+            Err::TeamNumberError
+        } else {
+            team.members.retain(|&i| i != signer);
+        }
+        msg!("{} is successfully removed from the team {}", signer,team.name);
+        Ok(())
     }
 }
 
