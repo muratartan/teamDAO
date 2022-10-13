@@ -59,6 +59,24 @@ pub mod teamdao {
         msg!("{} is successfully removed from the team {}", signer,team.name);
         Ok(())
     }
+
+    //----------------------- tournament section -------------------------------
+
+    pub fn join_tournament(ctx: Context<JoinTournament>, team: String, id: u64) -> Result<()> {
+        let team = &mut ctx.accounts.team;
+
+        if team.members.len() < 5 || team.tournament != Pubkey::default {
+            Err::NotEligibleToJoinTournament
+        }
+
+        if team.vote_result && team.yes_votes > 2 {
+            team.join_tournament = true;
+        } else {
+            teamjoin_tournament = false;
+        }
+        Ok(())
+    }
+
 }
 
 
