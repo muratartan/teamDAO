@@ -190,7 +190,17 @@ pub mod teamdao {
         Ok(())
     }
 
+}
 
+    // ---------------- base structs ---------------
+
+#[account]
+pub struct Team {
+    pub name: String,
+    pub id: u64,
+    pub captain: Pubkey,
+    pub members: Vec<Pubkey>,
+    pub 
 }
 
 
