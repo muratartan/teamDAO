@@ -111,7 +111,7 @@ pub mod teamdao {
     pub fn vote_for_tournament(ctx: Context<Vote>, team: String, id: u64, address: Pubkey, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
-        if team.active_tournament == Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && team.voted_players.contains(ctx.accounts.signer.key) {
+        if team.active_tournament == Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted_players.contains(ctx.accounts.signer.key) {
            match vote {
                 Vote::Yes => {
                     team.voted.push(*ctx.accounts.signer.key);
@@ -154,6 +154,40 @@ pub mod teamdao {
 
     pub fn reward_distribution(ctx: Context<RewardDistribution>, team: String, id: u64, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
+
+        if team.active_tournament == Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted_players.contains(ctx.accounts.signer.key) {
+            match vote {
+                Vote::Yes => {
+                    team.dist_of_voted.push(*ctx.accounts.signer.key);
+                    team.dist_yes += 1;
+                }
+                Vote::No => {
+                    team.voted.push(*ctx.accounts.signer.key);
+                }
+            }
+
+            if team.dist_of_voted.len() > 2 && team.dist_yes > 2 {
+                team.dist_result = true;
+            }
+            if team.dist_of_voted.len() > 2 && team.dist_yes < 3 {
+                team.dist_result = false;
+            }
+        } else {
+            Err::CannotProvideRewardDistributionConditions
+        }
+    }
+
+    pub fn set_rewards(ctx: Context<SetRewards>, team: String, id: u64, reward: u64) -> Result<()> {
+        let team = &mut ctx.accounts.team;
+        if team.members.contains(ctx.accounts.to.key) {
+            let from = ctx.accounts.from.to_account_info();
+            let to = ctx.accounts.to.to_account_info();
+            **from.try_borrow_mut_lamports()? -= reward;
+            **to.try_borrow_mut_lamports()? += reward;
+        } else {
+            Err::MemberNotFoundInTeam
+        }
+        Ok(())
     }
 
 
