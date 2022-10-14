@@ -69,13 +69,93 @@ pub mod teamdao {
             Err::NotEligibleToJoinTournament
         }
 
-        if team.vote_result && team.yes_votes > 2 {
+        if team.vote_result && team.yes_vote > 2 {
             team.join_tournament = true;
         } else {
             teamjoin_tournament = false;
         }
         Ok(())
     }
+
+    pub fn leave_tournament(ctx: Context<LeaveTournament>, team: String, id: u64, vote: Vote) -> Result<()> {
+        let team = &mut ctx.accounts.team;
+
+        if team.active_tournament == Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && team.voted_players.contains(ctx.accounts.signer.key) {
+            match vote {
+                Vote::Yes => {
+                    team.leave_voted_members.push(*ctx.accounts.signer.key);
+                    team.leave_yes_vote += 1;
+                }
+                Vote::No => {
+                    team.voted.push(*ctx.accounts.signer.key);
+                    team.leave_no_vote += 1;
+                }
+           } 
+        } else {
+            Err::NotEligibleToLeaveVoting
+        }
+
+        if team.yes_vote > 2 {
+            team.active_tournament = Pubkey::default();
+            team.yes_vote = 0;
+            team.leave_no_vote = 0;
+            team.leave_voted_members = vec![];
+            team.voted = vec![];
+        }
+
+        msg!("{} is successfully leaved from the tournament", team.name);
+        Ok(())
+
+    }
+
+    pub fn vote_for_tournament(ctx: Context<Vote>, team: String, id: u64, address: Pubkey, vote: Vote) -> Result<()> {
+        let team = &mut ctx.accounts.team;
+
+        if team.active_tournament == Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && team.voted_players.contains(ctx.accounts.signer.key) {
+           match vote {
+                Vote::Yes => {
+                    team.voted.push(*ctx.accounts.signer.key);
+                    team.yes_vote += 1;
+                }
+                Vote::No => {
+                    team.voted.push(*ctx.accounts.signer.key);
+                    team.no_vote += 1;
+                }
+           } 
+        } else {
+            Err::NotEligibleToVote
+        }
+
+        if team.yes > 2 {
+            team.active_tournament = tournament;
+            team.yes = 0;
+            team.voted = vec![];
+            team.result = true;
+        }
+
+        msg!("{} is voted for the tournament", team.name);
+        Ok(())
+    }
+
+    // -------------------- tournament proposal section --------------------------
+
+    pub fn set_proposal(ctx: Context<SetProposal>, team: String,id: u64, per: Vec<u8>) -> Result<()> {
+        let team = &mut ctx.accounts.team;
+
+        if per.iter().sum == 100 && team.active_tournament == Pubkey::default() && team.captain == *ctx.accounts.signer.key {
+            team.distribution = per;
+        } else {
+            Err::CannotProvideProposalConditions
+        }
+
+        msg!("{} is successfully proposed the percentage of {:?}", team.name, team.distribution);
+        Ok(())
+    }
+
+    pub fn reward_distribution(ctx: Context<RewardDistribution>, team: String, id: u64, vote: Vote) -> Result<()> {
+        let team = &mut ctx.accounts.team;
+    }
+
 
 }
 
