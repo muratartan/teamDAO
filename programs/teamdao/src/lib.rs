@@ -82,7 +82,7 @@ pub mod teamdao {
         Ok(())
     }
 
-    pub fn leave_from_tournament(ctx: Context<LeaveTournament>, team: String, id: u64, vote: Vote) -> Result<()> {
+    pub fn leave_from_tournament(ctx: Context<LeaveFromTournament>, team: String, id: u64, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
         if team.active_tournament != Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted_players.contains(ctx.accounts.signer.key) {
@@ -113,7 +113,7 @@ pub mod teamdao {
 
     }
 
-    pub fn vote_for_tournament(ctx: Context<Vote>, team: String, id: u64, address: Pubkey, vote: Vote) -> Result<()> {
+    pub fn vote_for_tournament(ctx: Context<VoteForTournament>, team: String, id: u64, address: Pubkey, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
         if team.active_tournament == Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted.contains(ctx.accounts.signer.key) {
@@ -258,6 +258,46 @@ pub struct RemoveFromTeam<'info> {
 
     pub system_program: Program<'info, System>,
 }
+
+    // -----------------
+
+#[derive(Accounts)]
+#[instruction(_team: String, _id: u64)]
+pub struct JoinTournament<'info> {
+    #[account(mut, seeds=[_team.as_bytes(), &_id.to_ne_bytes()], bump = team.bump)]
+    pub team: Account<'info, Team>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(_team: String, _id: u64)]
+pub struct VoteForTournament<'info> {
+    #[account(mut, seeds=[_team.as_bytes(), &_id.to_ne_bytes()], bump = team.bump)]
+    pub team: Account<'info, Team>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(_team: String, _id: u64)]
+pub struct LeaveFromTournament<'info> {
+    #[account(mut, seeds=[_name.as_bytes(), &_id.to_ne_bytes()], bump = team.bump)]
+    pub team: Account<'info, Team>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+
 
 
 
