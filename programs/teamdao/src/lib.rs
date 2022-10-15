@@ -297,6 +297,47 @@ pub struct LeaveFromTournament<'info> {
     pub system_program: Program<'info, System>,
 }
 
+    // -----------------
+
+#[derive(Accounts)]
+#[instruction(_team: String, _id: u64)]
+pub struct SetProposal<'info> {
+    #[account(mut, seeds=[_team.as_bytes(), &_id.to_ne_bytes()], bump = team.bump)]
+    pub team: Account<'info, Team>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(_team: String, _id: u64)]
+pub struct RewardDistribution<'info> {
+    #[account(mut, seeds=[_team.as_bytes(), &_id.to_ne_bytes()], bump = team.bump)]
+    pub team: Account<'info, Team>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(_team: String, _id: u64)]
+pub struct SetRewards<'info> {
+    #[account(mut, seeds=[_team.as_bytes(), &_id.to_ne_bytes()], bump = team.bump)]
+    pub team: Account<'info, Team>,
+    #[account(mut)]
+    pub from: AccountInfo<'info>,
+    #[account(mut)]
+    pub to: AccountInfo<'info>,
+    #[account()]
+    
+    pub user: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
 
 
 
