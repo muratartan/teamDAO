@@ -7,17 +7,19 @@ pub mod teamdao {
     use super::*;
 
     pub fn initialize(ctx: Context<Initialize>, name: String, id:u64) -> Result<()> {
-        let team: &mut Account<Team> = &mut ctx.accounts.team;
+        let team = &mut ctx.accounts.team;
         team.captain = ctx.accounts.signer.key();
         team.name = name;
         team.id = id;
+        team.members.push(*ctx.accounts.signer.key);
+        team.bump = *ctx.bumps.get("team").ok_or(Err::InvalidBump)?;
         
         msg!("team {} is successfully created, captain is {}", team.name,team.captain );
         Ok(())
     }
 
-    pub fn join_team(ctx: Context<JoinTeam>, name: String, id: u64, new_member: Pubkey) -> Result<()> {
-        let team: &mut Account<Team> = &mut ctx.accounts.team;
+    pub fn join_team(ctx: Context<JoinTeam>, name: String, _id: u64, new_member: Pubkey) -> Result<()> {
+        let team = &mut ctx.accounts.team;
         team.captain = ctx.accounts.signer.key();
         team.name = name;
         team.members.push(new_member);
@@ -25,8 +27,8 @@ pub mod teamdao {
         Ok(())
     }
 
-    pub fn leave_team(ctx: Context<LeaveTeam>, name: String, id: u64, leaving_member: Pubkey) -> Result<()> {
-        let team: &mut Account<Team> = &mut ctx.accounts.team;
+    pub fn leave_team(ctx: Context<LeaveTeam>, name: String, _id: u64, leaving_member: Pubkey) -> Result<()> {
+        let team = &mut ctx.accounts.team;
         if team.members.contains(&leaving_member) {
             team.members.retain(|&member| member != leaving_member);
             msg!("player {} is successfully leaved from the team {}", leaving_member , team.name );
@@ -36,8 +38,8 @@ pub mod teamdao {
         Ok(())
     }
 
-    fn change_captain(ctx: Context<ChangeCaptain>, team: String, id: u64, new_captain: Pubkey) -> Result<()> {
-        let team: &mut Account<Team> = &mut ctx.accounts.team;
+    fn change_captain(ctx: Context<ChangeCaptain>, team: String, _id: u64, new_captain: Pubkey) -> Result<()> {
+        let team = &mut ctx.accounts.team;
         team.captain = *ctx.accounts.signer.key;
         if team.members.contains(&new_captain) {
             team.captain = new_captain;
@@ -48,11 +50,13 @@ pub mod teamdao {
         Ok(())
     }
 
-    fn remove_from_team(ctx: Context<RemoveFromTeam>, team: String, id: u64) -> Result<()> {
+    fn remove_from_team(ctx: Context<RemoveFromTeam>, id: u64) -> Result<()> {
         let team: &mut Account<Team> = &mut ctx.accounts.team;
         let signer == *ctx.accounts.signer.key;
         if team.members.len() == 1 {
-            Err::TeamNumberError
+            team.captain = Pubkey::default();
+            team.members = vec![];
+            team.id = 0;
         } else {
             team.members.retain(|&i| i != signer);
         }
