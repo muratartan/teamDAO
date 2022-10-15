@@ -81,10 +81,10 @@ pub mod teamdao {
         Ok(())
     }
 
-    pub fn leave_tournament(ctx: Context<LeaveTournament>, team: String, id: u64, vote: Vote) -> Result<()> {
+    pub fn leave_from_tournament(ctx: Context<LeaveTournament>, team: String, id: u64, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
-        if team.active_tournament == Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && team.voted_players.contains(ctx.accounts.signer.key) {
+        if team.active_tournament != Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted_players.contains(ctx.accounts.signer.key) {
             match vote {
                 Vote::Yes => {
                     team.leave_voted_members.push(*ctx.accounts.signer.key);
@@ -99,9 +99,9 @@ pub mod teamdao {
             Err::NotEligibleToLeaveVoting
         }
 
-        if team.yes_vote > 2 {
+        if team.leave_yes_vote > 2 {
             team.active_tournament = Pubkey::default();
-            team.yes_vote = 0;
+            team.leave_yes_vote = 0;
             team.leave_no_vote = 0;
             team.leave_voted_members = vec![];
             team.voted = vec![];
@@ -115,15 +115,15 @@ pub mod teamdao {
     pub fn vote_for_tournament(ctx: Context<Vote>, team: String, id: u64, address: Pubkey, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
-        if team.active_tournament == Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted_players.contains(ctx.accounts.signer.key) {
+        if team.active_tournament == Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted.contains(ctx.accounts.signer.key) {
            match vote {
                 Vote::Yes => {
                     team.voted.push(*ctx.accounts.signer.key);
-                    team.yes_vote += 1;
+                    team.yes += 1;
                 }
                 Vote::No => {
                     team.voted.push(*ctx.accounts.signer.key);
-                    team.no_vote += 1;
+                    team.no += 1;
                 }
            } 
         } else {
@@ -131,7 +131,7 @@ pub mod teamdao {
         }
 
         if team.yes > 2 {
-            team.active_tournament = tournament;
+            team.active_tournament = tournament_add;
             team.yes = 0;
             team.voted = vec![];
             team.result = true;
@@ -204,15 +204,13 @@ pub struct Team {
     pub id: u64,
     pub captain: Pubkey,
     pub members: Vec<Pubkey>,
-    pub bump: u8,
-    pub tournament: 
+    pub bump: u8, 
     pub join_tournament:
     pub active_tournament: Pubkey,
-    pub voted:
-    pub voted_players: Vec<Pubkey>,
+    pub voted: Vec<Pubkey>,
     pub vote_result: bool,
-    pub yes_vote: u8
-    pub no_vote:
+    pub yes: u8
+    pub no: u8,
     pub leave_yes_vote: u8,
     pub leave_no_vote:
     pub leave_voted_members: Vec<Pubkey>,
