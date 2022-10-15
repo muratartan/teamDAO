@@ -205,14 +205,14 @@ pub struct Team {
     pub captain: Pubkey,
     pub members: Vec<Pubkey>,
     pub bump: u8, 
-    pub join_tournament:
+    pub join_tournament: bool,
     pub active_tournament: Pubkey,
     pub voted: Vec<Pubkey>,
     pub vote_result: bool,
     pub yes: u8
     pub no: u8,
     pub leave_yes_vote: u8,
-    pub leave_no_vote:
+    pub leave_no_vote: u8,
     pub leave_voted_members: Vec<Pubkey>,
     pub result: bool,
     pub distribution: Vec<u8>
@@ -221,7 +221,9 @@ pub struct Team {
     pub dist_result: bool,
 }
 
-impl Team {}
+impl Team {
+    const LEN: usize = 16+32+8+32+5*32+1+1+32+5*32+1+1+1+1+5*32+1+1*5+1+5*32+1;
+}
 
 pub enum Vote {
     Yes,
