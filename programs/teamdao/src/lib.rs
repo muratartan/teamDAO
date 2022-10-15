@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 
+
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
 #[program]
@@ -16,7 +17,7 @@ pub mod teamdao {
         
         msg!("team {} is successfully created, captain is {}", team.name,team.captain );
         Ok(())
-    }
+    }  
 
     pub fn join_team(ctx: Context<JoinTeam>, name: String, _id: u64, new_member: Pubkey) -> Result<()> {
         let team = &mut ctx.accounts.team;
@@ -196,6 +197,71 @@ pub mod teamdao {
 
 }
 
+    // ---------------- instructions -----------------
+
+#[derive(Accounts)]
+#[instruction(_team: String, _id: u64)]
+pub struct Initialize<'info> {
+    #[account(init, payer = signer, space = Team::LEN, seeds=[_team.as_bytes(), &_id.to_ne_bytes()], bump)]
+    pub team: Account<'info, Team>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(team: String, id: u64)]
+pub struct JoinTeam<'info> {
+    #[account(mut, seeds=[team.as_bytes(), &id.to_ne_bytes()], bump = team.bump)]
+    pub team: Account<'info, Team>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(team: String, id: u64)]
+pub struct LeaveTeam<'info> {
+    #[account(mut, seeds=[team.as_bytes(), &id.to_ne_bytes()], bump = team.bump)]
+    pub team: Account<'info, Team>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(team: String, id: u64)]
+pub struct TransferCaptain<'info> {
+    #[account(mut, seeds=[team.as_bytes(), &id.to_ne_bytes()], bump = team.bump)]
+    pub team: Account<'info, Team>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(team: String, id: u64)]
+pub struct RemoveFromTeam<'info> {
+    #[account(mut, seeds=[team.as_bytes(), &id.to_ne_bytes()], bump = team.bump)]
+    pub team: Account<'info, Team>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+
+
+
     // ---------------- base structs ---------------
 
 #[account]
@@ -225,6 +291,7 @@ impl Team {
     const LEN: usize = 16+32+8+32+5*32+1+1+32+5*32+1+1+1+1+5*32+1+1*5+1+5*32+1;
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize)]
 pub enum Vote {
     Yes,
     No,
