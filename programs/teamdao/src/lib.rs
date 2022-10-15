@@ -66,14 +66,14 @@ pub mod teamdao {
 
     //----------------------- tournament section -------------------------------
 
-    pub fn join_tournament(ctx: Context<JoinTournament>, team: String, id: u64) -> Result<()> {
+    pub fn join_tournament(ctx: Context<JoinTournament>, _team: String, _id: u64) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
-        if team.members.len() < 5 || team.tournament != Pubkey::default {
+        if team.members.len() < 5 || team.tournament == Pubkey::default {
             Err::NotEligibleToJoinTournament
         }
 
-        if team.vote_result && team.yes_vote > 2 {
+        if team.voting_result && team.dist_yes > 2 {
             team.join_tournament = true;
         } else {
             team.join_tournament = false;
@@ -143,10 +143,10 @@ pub mod teamdao {
 
     // -------------------- tournament proposal section --------------------------
 
-    pub fn set_proposal(ctx: Context<SetProposal>, team: String,id: u64, per: Vec<u8>) -> Result<()> {
+    pub fn set_proposal(ctx: Context<SetProposal>, _team: String, _id: u64, per: Vec<u8>) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
-        if per.iter().sum == 100 && team.active_tournament == Pubkey::default() && team.captain == *ctx.accounts.signer.key {
+        if per.iter().sum == 100 && team.active_tournament != Pubkey::default() && team.captain == *ctx.accounts.signer.key {
             team.distribution = per;
         } else {
             Err::CannotProvideProposalConditions
@@ -159,7 +159,7 @@ pub mod teamdao {
     pub fn reward_distribution(ctx: Context<RewardDistribution>, team: String, id: u64, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
-        if team.active_tournament == Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted_players.contains(ctx.accounts.signer.key) {
+        if team.active_tournament != Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted_players.contains(ctx.accounts.signer.key) {
             match vote {
                 Vote::Yes => {
                     team.dist_of_voted.push(*ctx.accounts.signer.key);
@@ -181,7 +181,7 @@ pub mod teamdao {
         }
     }
 
-    pub fn set_rewards(ctx: Context<SetRewards>, team: String, id: u64, reward: u64) -> Result<()> {
+    pub fn set_rewards(ctx: Context<SetRewards>, _team: String, _id: u64, reward: u64) -> Result<()> {
         let team = &mut ctx.accounts.team;
         if team.members.contains(ctx.accounts.to.key) {
             let from = ctx.accounts.from.to_account_info();
