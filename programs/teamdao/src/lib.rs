@@ -72,7 +72,7 @@ pub mod teamdao {
         if team.vote_result && team.yes_vote > 2 {
             team.join_tournament = true;
         } else {
-            teamjoin_tournament = false;
+            team.join_tournament = false;
         }
         Ok(())
     }
@@ -200,8 +200,32 @@ pub struct Team {
     pub id: u64,
     pub captain: Pubkey,
     pub members: Vec<Pubkey>,
-    pub 
+    pub bump: u8,
+    pub tournament: 
+    pub join_tournament:
+    pub active_tournament: Pubkey,
+    pub voted:
+    pub voted_players: Vec<Pubkey>,
+    pub vote_result: bool,
+    pub yes_vote: u8
+    pub no_vote:
+    pub leave_yes_vote: u8,
+    pub leave_no_vote:
+    pub leave_voted_members: Vec<Pubkey>,
+    pub result: bool,
+    pub distribution: Vec<u8>
+    pub dist_yes: u8,
+    pub dist_of_voted: Vec<Pubkey>,
+    pub dist_result: bool,
 }
+
+impl Team {}
+
+pub enum Vote {
+    Yes,
+    No,
+}
+
 
 
 
@@ -230,10 +254,4 @@ pub struct ChangeTeam<'info> {
     pub system_program: Program<'info, System>
 }
 
-pub struct Team {
-    pub players: u8,
-    pub captain: Pubkey,
-    pub prize_owners: u8,
-    pub prize_owners_id: Vec<u64>,
-    pub prize_owners_vote: Vec<u64>,
-}
+
