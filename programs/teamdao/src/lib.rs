@@ -39,7 +39,7 @@ pub mod teamdao {
         Ok(())
     }
 
-    fn change_captain(ctx: Context<ChangeCaptain>, team: String, _id: u64, new_captain: Pubkey) -> Result<()> {
+    pub fn change_captain(ctx: Context<ChangeCaptain>, team: String, _id: u64, new_captain: Pubkey) -> Result<()> {
         let team = &mut ctx.accounts.team;
         team.captain = *ctx.accounts.signer.key;
         if team.members.contains(&new_captain) {
@@ -51,7 +51,7 @@ pub mod teamdao {
         Ok(())
     }
 
-    fn remove_from_team(ctx: Context<RemoveFromTeam>, id: u64) -> Result<()> {
+    pub fn remove_from_team(ctx: Context<RemoveFromTeam>, id: u64) -> Result<()> {
         let team: &mut Account<Team> = &mut ctx.accounts.team;
         let signer = *ctx.accounts.signer.key;
         if team.members.len() == 1 {
@@ -132,7 +132,7 @@ pub mod teamdao {
         }
 
         if team.yes > 2 {
-            team.active_tournament = tournament_add;
+            team.active_tournament = address;
             team.yes = 0;
             team.voted = vec![];
             team.result = true;
@@ -237,7 +237,7 @@ pub struct LeaveTeam<'info> {
 
 #[derive(Accounts)]
 #[instruction(team: String, id: u64)]
-pub struct TransferCaptain<'info> {
+pub struct ChangeCaptain<'info> {
     #[account(mut, seeds=[team.as_bytes(), &id.to_ne_bytes()], bump = team.bump)]
     pub team: Account<'info, Team>,
 
@@ -288,7 +288,7 @@ pub struct VoteForTournament<'info> {
 #[derive(Accounts)]
 #[instruction(_team: String, _id: u64)]
 pub struct LeaveFromTournament<'info> {
-    #[account(mut, seeds=[_name.as_bytes(), &_id.to_ne_bytes()], bump = team.bump)]
+    #[account(mut, seeds=[_team.as_bytes(), &_id.to_ne_bytes()], bump = team.bump)]
     pub team: Account<'info, Team>,
 
     #[account(mut)]
