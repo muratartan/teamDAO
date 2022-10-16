@@ -30,12 +30,11 @@ pub mod teamdao {
 
     pub fn leave_team(ctx: Context<LeaveTeam>, name: String, _id: u64, leaving_member: Pubkey) -> Result<()> {
         let team = &mut ctx.accounts.team;
-        if team.members.contains(&leaving_member) {
-            team.members.retain(|&member| member != leaving_member);
-            msg!("player {} is successfully leaved from the team {}", leaving_member , team.name );
-        } else {
-            Err::MemberNotFound
-        };
+        require!(team.members.contains(&leaving_member),Err::MemberNotFound);
+                
+        team.members.retain(|&member| member != leaving_member);
+        msg!("player {} is successfully leaved from the team {}", leaving_member , team.name );
+        
         Ok(())
     }
 
