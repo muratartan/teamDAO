@@ -6,7 +6,7 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 #[program]
 pub mod teamdao {
     use super::*;
-
+    // create the team
     pub fn initialize(ctx: Context<Initialize>, name: String, id:u64) -> Result<()> {
         let team = &mut ctx.accounts.team;
         team.captain = ctx.accounts.signer.key();
@@ -18,7 +18,7 @@ pub mod teamdao {
         msg!("team {} is successfully created, captain is {}", team.name,team.captain );
         Ok(())
     }  
-
+    // join a team
     pub fn join_team(ctx: Context<JoinTeam>, name: String, _id: u64, new_member: Pubkey) -> Result<()> {
         let team = &mut ctx.accounts.team;
         team.captain = ctx.accounts.signer.key();
@@ -27,7 +27,7 @@ pub mod teamdao {
         msg!("player {} is successfully joined to the team {}", new_member , team.name );
         Ok(())
     }
-
+    // leave from a team
     pub fn leave_team(ctx: Context<LeaveTeam>, _name: String, _id: u64, leaving_member: Pubkey) -> Result<()> {
         let team = &mut ctx.accounts.team;
         require!(team.members.contains(&leaving_member),Err::MemberNotFound);
@@ -37,7 +37,7 @@ pub mod teamdao {
         
         Ok(())
     }
-
+    // change the captain of the team
     pub fn change_captain(ctx: Context<ChangeCaptain>, _name: String, _id: u64, new_captain: Pubkey) -> Result<()> {
         let team = &mut ctx.accounts.team;
         team.captain = *ctx.accounts.signer.key;
@@ -48,7 +48,7 @@ pub mod teamdao {
         
         Ok(())
     }
-
+    // remove a member of the team
     pub fn remove_from_team(ctx: Context<RemoveFromTeam>, _name: String, _id: u64) -> Result<()> {
         let team: &mut Account<Team> = &mut ctx.accounts.team;
         let signer = *ctx.accounts.signer.key;
@@ -65,6 +65,7 @@ pub mod teamdao {
 
     //----------------------- tournament section -------------------------------
 
+    // join a tournament
     pub fn join_tournament(ctx: Context<JoinTournament>, _team: String, _id: u64) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
@@ -78,6 +79,7 @@ pub mod teamdao {
         Ok(())
     }
 
+    // leave from a tournament
     pub fn leave_from_tournament(ctx: Context<LeaveFromTournament>, _team: String, _id: u64, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
@@ -109,6 +111,7 @@ pub mod teamdao {
 
     }
 
+    // vote in a tournament
     pub fn vote_for_tournament(ctx: Context<VoteForTournament>, _team: String, _id: u64, address: Pubkey, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
@@ -140,6 +143,7 @@ pub mod teamdao {
 
     // -------------------- tournament proposal section --------------------------
 
+    // distribution of rewards proposal
     pub fn set_proposal(ctx: Context<SetProposal>, _team: String, _id: u64, per: Vec<u8>) -> Result<()> {
         let team = &mut ctx.accounts.team;
         let total: u8 = per.iter().sum();
@@ -153,6 +157,7 @@ pub mod teamdao {
         Ok(())
     }
 
+    // distribution of the rewards
     pub fn reward_distribution(ctx: Context<RewardDistribution>, _team: String, _id: u64, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
@@ -180,6 +185,7 @@ pub mod teamdao {
         Ok(())
     }
 
+    // claim the rewards
     pub fn set_rewards(ctx: Context<SetRewards>, _team: String, _id: u64, reward: u64) -> Result<()> {
         let team = &mut ctx.accounts.team;
         if team.members.contains(ctx.accounts.to.key) {
@@ -197,6 +203,7 @@ pub mod teamdao {
 
     // ---------------- instructions -----------------
 
+// derive macro for creating the team 
 #[derive(Accounts)]
 #[instruction(_team: String, _id: u64)]
 pub struct Initialize<'info> {
@@ -209,6 +216,7 @@ pub struct Initialize<'info> {
     pub system_program: Program<'info, System>,
 }
 
+// derive macro for joinging team
 #[derive(Accounts)]
 #[instruction(name: String, id: u64)]
 pub struct JoinTeam<'info> {
@@ -221,6 +229,7 @@ pub struct JoinTeam<'info> {
     pub system_program: Program<'info, System>,
 }
 
+// derive macro for leaving the team
 #[derive(Accounts)]
 #[instruction(name: String, id: u64)]
 pub struct LeaveTeam<'info> {
@@ -233,6 +242,7 @@ pub struct LeaveTeam<'info> {
     pub system_program: Program<'info, System>,
 }
 
+// derive macro for changing the captain
 #[derive(Accounts)]
 #[instruction(name: String, id: u64)]
 pub struct ChangeCaptain<'info> {
@@ -245,6 +255,7 @@ pub struct ChangeCaptain<'info> {
     pub system_program: Program<'info, System>,
 }
 
+// derive macro for removing from team
 #[derive(Accounts)]
 #[instruction(name: String, id: u64)]
 pub struct RemoveFromTeam<'info> {
@@ -257,7 +268,7 @@ pub struct RemoveFromTeam<'info> {
     pub system_program: Program<'info, System>,
 }
 
-    // -----------------
+    // ----------------- tournament instructions ------------------
 
 #[derive(Accounts)]
 #[instruction(_team: String, _id: u64)]
@@ -295,7 +306,7 @@ pub struct LeaveFromTournament<'info> {
     pub system_program: Program<'info, System>,
 }
 
-    // -----------------
+    // ----------------- reward proposal instructions --------------
 
 #[derive(Accounts)]
 #[instruction(_team: String, _id: u64)]
@@ -369,6 +380,7 @@ pub struct Team {
 }
 
 impl Team {
+    // bump values are in the same order of Team struct except the first one is discriminator
     const LEN: usize = 16+32+8+32+5*32+1+1+32+5*32+1+1+1+1+5*32+1+1*5+1+5*32+1;
 }
 
