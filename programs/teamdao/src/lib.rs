@@ -41,12 +41,11 @@ pub mod teamdao {
     pub fn change_captain(ctx: Context<ChangeCaptain>, team: String, _id: u64, new_captain: Pubkey) -> Result<()> {
         let team = &mut ctx.accounts.team;
         team.captain = *ctx.accounts.signer.key;
-        if team.members.contains(&new_captain) {
+        require!(team.members.contains(&new_captain),Err::MemberNotFound);
+        
             team.captain = new_captain;
             msg!("player {} is now the captain of the team {}", new_captain , team.name );
-        } else {
-            Err::MemberNotFound
-        };
+        
         Ok(())
     }
 
@@ -69,11 +68,9 @@ pub mod teamdao {
     pub fn join_tournament(ctx: Context<JoinTournament>, _team: String, _id: u64) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
-        if team.members.len() < 5 || team.tournament == Pubkey::default {
-            Err::NotEligibleToJoinTournament
-        }
+        require!(team.members.len() == 5,Err::NotEligibleToJoinTournament);
 
-        if team.voting_result && team.dist_yes > 2 {
+        if team.vote_result && team.dist_yes > 2 {
             team.join_tournament = true;
         } else {
             team.join_tournament = false;
