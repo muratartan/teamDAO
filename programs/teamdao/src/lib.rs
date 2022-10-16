@@ -81,7 +81,7 @@ pub mod teamdao {
     pub fn leave_from_tournament(ctx: Context<LeaveFromTournament>, team: String, id: u64, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
-        if team.active_tournament != Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted_players.contains(ctx.accounts.signer.key) {
+        if team.active_tournament != Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted.contains(ctx.accounts.signer.key) {
             match vote {
                 Vote::Yes => {
                     team.leave_voted_members.push(*ctx.accounts.signer.key);
@@ -93,7 +93,7 @@ pub mod teamdao {
                 }
            } 
         } else {
-            Err::NotEligibleToLeaveVoting
+            return err!(Err::NotEligibleToLeaveVoting)
         }
 
         if team.leave_yes_vote > 2 {
@@ -124,7 +124,7 @@ pub mod teamdao {
                 }
            } 
         } else {
-            Err::NotEligibleToVote
+            return err!(Err::NotEligibleToVote)
         }
 
         if team.yes > 2 {
