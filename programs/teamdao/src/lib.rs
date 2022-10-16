@@ -38,7 +38,7 @@ pub mod teamdao {
         Ok(())
     }
 
-    pub fn change_captain(ctx: Context<ChangeCaptain>, team: String, _id: u64, new_captain: Pubkey) -> Result<()> {
+    pub fn change_captain(ctx: Context<ChangeCaptain>, _name: String, _id: u64, new_captain: Pubkey) -> Result<()> {
         let team = &mut ctx.accounts.team;
         team.captain = *ctx.accounts.signer.key;
         require!(team.members.contains(&new_captain),Err::MemberNotFound);
@@ -49,7 +49,7 @@ pub mod teamdao {
         Ok(())
     }
 
-    pub fn remove_from_team(ctx: Context<RemoveFromTeam>, id: u64) -> Result<()> {
+    pub fn remove_from_team(ctx: Context<RemoveFromTeam>, _name: String, id: u64) -> Result<()> {
         let team: &mut Account<Team> = &mut ctx.accounts.team;
         let signer = *ctx.accounts.signer.key;
         if team.members.len() == 1 {
@@ -234,9 +234,9 @@ pub struct LeaveTeam<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(team: String, id: u64)]
+#[instruction(name: String, id: u64)]
 pub struct ChangeCaptain<'info> {
-    #[account(mut, seeds=[team.as_bytes(), &id.to_ne_bytes()], bump = team.bump)]
+    #[account(mut, seeds=[name.as_bytes(), &id.to_ne_bytes()], bump = team.bump)]
     pub team: Account<'info, Team>,
 
     #[account(mut)]
@@ -246,9 +246,9 @@ pub struct ChangeCaptain<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(team: String, id: u64)]
+#[instruction(name: String, id: u64)]
 pub struct RemoveFromTeam<'info> {
-    #[account(mut, seeds=[team.as_bytes(), &id.to_ne_bytes()], bump = team.bump)]
+    #[account(mut, seeds=[name.as_bytes(), &id.to_ne_bytes()], bump = team.bump)]
     pub team: Account<'info, Team>,
 
     #[account(mut)]
