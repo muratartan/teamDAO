@@ -142,11 +142,11 @@ pub mod teamdao {
 
     pub fn set_proposal(ctx: Context<SetProposal>, _team: String, _id: u64, per: Vec<u8>) -> Result<()> {
         let team = &mut ctx.accounts.team;
-
-        if per.iter().sum == 100 && team.active_tournament != Pubkey::default() && team.captain == *ctx.accounts.signer.key {
+        let total: u8 = per.iter().sum();
+        if total == 100 && team.active_tournament != Pubkey::default() && team.captain == *ctx.accounts.signer.key {
             team.distribution = per;
         } else {
-            Err::CannotProvideProposalConditions
+            return err!(Err::CannotProvideProposalConditions)
         }
 
         msg!("{} is successfully proposed the percentage of {:?}", team.name, team.distribution);
@@ -156,7 +156,7 @@ pub mod teamdao {
     pub fn reward_distribution(ctx: Context<RewardDistribution>, team: String, id: u64, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
-        if team.active_tournament != Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted_players.contains(ctx.accounts.signer.key) {
+        if team.active_tournament != Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted.contains(ctx.accounts.signer.key) {
             match vote {
                 Vote::Yes => {
                     team.dist_of_voted.push(*ctx.accounts.signer.key);
@@ -172,10 +172,12 @@ pub mod teamdao {
             }
             if team.dist_of_voted.len() > 2 && team.dist_yes < 3 {
                 team.dist_result = false;
+            } else {
+                return err!(Err::CannotProvideRewardDistributionConditions)
             }
-        } else {
-            Err::CannotProvideRewardDistributionConditions
-        }
+        
+        } 
+        Ok(())
     }
 
     pub fn set_rewards(ctx: Context<SetRewards>, _team: String, _id: u64, reward: u64) -> Result<()> {
@@ -186,7 +188,7 @@ pub mod teamdao {
             **from.try_borrow_mut_lamports()? -= reward;
             **to.try_borrow_mut_lamports()? += reward;
         } else {
-            Err::MemberNotFoundInTeam
+            return err!(Err::MemberNotFoundInTeam)
         }
         Ok(())
     }
@@ -208,9 +210,9 @@ pub struct Initialize<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(team: String, id: u64)]
+#[instruction(name: String, id: u64)]
 pub struct JoinTeam<'info> {
-    #[account(mut, seeds=[team.as_bytes(), &id.to_ne_bytes()], bump = team.bump)]
+    #[account(mut, seeds=[name.as_bytes(), &id.to_ne_bytes()], bump = team.bump)]
     pub team: Account<'info, Team>,
 
     #[account(mut)]
@@ -220,9 +222,9 @@ pub struct JoinTeam<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(team: String, id: u64)]
+#[instruction(name: String, id: u64)]
 pub struct LeaveTeam<'info> {
-    #[account(mut, seeds=[team.as_bytes(), &id.to_ne_bytes()], bump = team.bump)]
+    #[account(mut, seeds=[name.as_bytes(), &id.to_ne_bytes()], bump = team.bump)]
     pub team: Account<'info, Team>,
 
     #[account(mut)]
