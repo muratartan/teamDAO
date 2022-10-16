@@ -28,7 +28,7 @@ pub mod teamdao {
         Ok(())
     }
 
-    pub fn leave_team(ctx: Context<LeaveTeam>, name: String, _id: u64, leaving_member: Pubkey) -> Result<()> {
+    pub fn leave_team(ctx: Context<LeaveTeam>, _name: String, _id: u64, leaving_member: Pubkey) -> Result<()> {
         let team = &mut ctx.accounts.team;
         require!(team.members.contains(&leaving_member),Err::MemberNotFound);
                 
@@ -49,7 +49,7 @@ pub mod teamdao {
         Ok(())
     }
 
-    pub fn remove_from_team(ctx: Context<RemoveFromTeam>, _name: String, id: u64) -> Result<()> {
+    pub fn remove_from_team(ctx: Context<RemoveFromTeam>, _name: String, _id: u64) -> Result<()> {
         let team: &mut Account<Team> = &mut ctx.accounts.team;
         let signer = *ctx.accounts.signer.key;
         if team.members.len() == 1 {
@@ -78,7 +78,7 @@ pub mod teamdao {
         Ok(())
     }
 
-    pub fn leave_from_tournament(ctx: Context<LeaveFromTournament>, team: String, id: u64, vote: Vote) -> Result<()> {
+    pub fn leave_from_tournament(ctx: Context<LeaveFromTournament>, _team: String, _id: u64, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
         if team.active_tournament != Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted.contains(ctx.accounts.signer.key) {
@@ -109,7 +109,7 @@ pub mod teamdao {
 
     }
 
-    pub fn vote_for_tournament(ctx: Context<VoteForTournament>, team: String, id: u64, address: Pubkey, vote: Vote) -> Result<()> {
+    pub fn vote_for_tournament(ctx: Context<VoteForTournament>, _team: String, _id: u64, address: Pubkey, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
         if team.active_tournament == Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted.contains(ctx.accounts.signer.key) {
@@ -153,7 +153,7 @@ pub mod teamdao {
         Ok(())
     }
 
-    pub fn reward_distribution(ctx: Context<RewardDistribution>, team: String, id: u64, vote: Vote) -> Result<()> {
+    pub fn reward_distribution(ctx: Context<RewardDistribution>, _team: String, _id: u64, vote: Vote) -> Result<()> {
         let team = &mut ctx.accounts.team;
 
         if team.active_tournament != Pubkey::default() && team.members.contains(ctx.accounts.signer.key) && !team.voted.contains(ctx.accounts.signer.key) {
@@ -327,8 +327,10 @@ pub struct SetRewards<'info> {
     #[account(mut, seeds=[_team.as_bytes(), &_id.to_ne_bytes()], bump = team.bump)]
     pub team: Account<'info, Team>,
     #[account(mut)]
+    /// CHECK: This is not dangerous because we don't read or write from this account
     pub from: AccountInfo<'info>,
     #[account(mut)]
+    /// CHECK: This is not dangerous because we don't read or write from this account
     pub to: AccountInfo<'info>,
     #[account()]
 
