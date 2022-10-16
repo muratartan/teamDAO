@@ -53,7 +53,7 @@ pub mod teamdao {
 
     fn remove_from_team(ctx: Context<RemoveFromTeam>, id: u64) -> Result<()> {
         let team: &mut Account<Team> = &mut ctx.accounts.team;
-        let signer == *ctx.accounts.signer.key;
+        let signer = *ctx.accounts.signer.key;
         if team.members.len() == 1 {
             team.captain = Pubkey::default();
             team.members = vec![];
@@ -333,7 +333,7 @@ pub struct SetRewards<'info> {
     #[account(mut)]
     pub to: AccountInfo<'info>,
     #[account()]
-    
+
     pub user: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
@@ -356,13 +356,13 @@ pub struct Team {
     pub active_tournament: Pubkey,
     pub voted: Vec<Pubkey>,
     pub vote_result: bool,
-    pub yes: u8
+    pub yes: u8,
     pub no: u8,
     pub leave_yes_vote: u8,
     pub leave_no_vote: u8,
     pub leave_voted_members: Vec<Pubkey>,
     pub result: bool,
-    pub distribution: Vec<u8>
+    pub distribution: Vec<u8>,
     pub dist_yes: u8,
     pub dist_of_voted: Vec<Pubkey>,
     pub dist_result: bool,
@@ -378,32 +378,14 @@ pub enum Vote {
     No,
 }
 
-
-
-
-
-
-
-
-
-
-
-
-#[derive(Accounts)]
-pub struct Initialize<'info> {
-    #[account(init, payer = signer, space = 8 + 8 + 2 + 32 + 1 + 64 )]
-    pub team: Account<'info, Team>,
-    #[account(mut)]
-    pub signer: Signer<'info>,
-    pub system_program: Program<'info, System>
+#[error_code]
+pub enum Err {
+    InvalidBump,
+    MemberNotFound,
+    NotEligibleToJoinTournament,
+    NotEligibleToLeaveVoting,
+    NotEligibleToVote,
+    CannotProvideProposalConditions,
+    CannotProvideRewardDistributionConditions,
+    MemberNotFoundInTeam,
 }
-
-pub struct ChangeTeam<'info> {
-    #[account(init, payer = signer, space = space = 8 + 8 + 2 + 32 + 1 + 64)]
-    pub team: Account<'info, Team>,
-    #[account(mut)]
-    pub signer: Signer<'info>,
-    pub system_program: Program<'info, System>
-}
-
-
